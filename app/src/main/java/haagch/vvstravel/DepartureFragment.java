@@ -269,7 +269,7 @@ public class DepartureFragment extends Fragment {
 
         @Override
         public int compareTo(Entry another) {
-            return Integer.compare(another.quality, this.quality);
+            if (another.quality == this.quality) return 0; else return this.quality > another.quality ? -1 : 1;
         }
     }
 
