@@ -1,12 +1,13 @@
 package haagch.vvstravel;
 
+import android.content.Context;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Xml;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -23,22 +25,18 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.TimeZone;
 
 import static android.R.layout.simple_list_item_1;
 import static java.util.Collections.sort;
@@ -47,13 +45,35 @@ import static java.util.Collections.sort;
  * Created by chris on 20.08.15.
  */
 public class DepartureFragment extends Fragment {
+    private enum states {
+        DEPARTURELIST,
+        STATIONLIST,
+        NONE
+    }
+    private static states state = states.NONE;
+    private class MonospaceAdapter extends ArrayAdapter<String> {
+        public MonospaceAdapter(Context context, int resource) {
+            super(context, resource);
+        }
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = super.getView(position, convertView, parent);
+
+            Typeface monospace = Typeface.MONOSPACE;
+            ((TextView)v).setTypeface(monospace);
+            return v;
+        }
+    }
     ArrayAdapter<String> aa;
+    SimpleDateFormat outputformat = new SimpleDateFormat("HH:mm");
+    TimeZone tz = TimeZone.getTimeZone("Europe/Berlin"); // VVS in germany
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.departurefrom, container, false);
-        aa = new ArrayAdapter<String>(getActivity().getBaseContext(), simple_list_item_1);
+        aa = new MonospaceAdapter(getActivity().getBaseContext(), simple_list_item_1);
+        outputformat.setTimeZone(tz);
         return rootView;
     }
 
@@ -89,7 +109,6 @@ public class DepartureFragment extends Fragment {
                 }
                 lastTask = new RequestStation();
                 ((RequestStation) lastTask).execute(u);
-                //aa.add(s.toString());
             }
         });
 
@@ -99,16 +118,28 @@ public class DepartureFragment extends Fragment {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (state == states.DEPARTURELIST) {
+                    aa.clear();
+                    final EditText et = (EditText) getView().findViewById(R.id.stationtf);
+                    et.setText("");
+                    state = states.NONE;
+                    return;
+                }
                 if (position >= entrylist.size()) {
                     return; //inconsistency between backing list and displayed list
                 }
                 try {
-                    //TODO: timezone
-                    String formattedYear = new SimpleDateFormat("yy", Locale.GERMANY).format(Calendar.getInstance().getTime());
-                    String formattedmonth = new SimpleDateFormat("MM", Locale.GERMANY).format(Calendar.getInstance().getTime());
-                    String formattedday = new SimpleDateFormat("dd", Locale.GERMANY).format(Calendar.getInstance().getTime());
-                    String formattedhour = new SimpleDateFormat("hh", Locale.GERMANY).format(Calendar.getInstance().getTime());
-                    String formattedminute = new SimpleDateFormat("mm", Locale.GERMANY).format(Calendar.getInstance().getTime());
+                    Date current = Calendar.getInstance(tz).getTime();
+                    SimpleDateFormat formattedYear = new SimpleDateFormat("yy", Locale.GERMANY);
+                    formattedYear.setTimeZone(tz);
+                    SimpleDateFormat formattedmonth = new SimpleDateFormat("MM", Locale.GERMANY);
+                    formattedmonth.setTimeZone(tz);
+                    SimpleDateFormat formattedday = new SimpleDateFormat("dd", Locale.GERMANY);
+                    formattedday.setTimeZone(tz);
+                    SimpleDateFormat formattedhour = new SimpleDateFormat("HH", Locale.GERMANY);
+                    formattedhour.setTimeZone(tz);
+                    SimpleDateFormat formattedminute = new SimpleDateFormat("mm", Locale.GERMANY);
+                    formattedminute.setTimeZone(tz);
 
                     String url = "http://www2.vvs.de/vvs/widget/XML_DM_REQUEST?"+
                             "zocationServerActive=1"+
@@ -125,23 +156,19 @@ public class DepartureFragment extends Fragment {
                             "&name_dm=" + entrylist.get(position).id+ //TODO thread safety
                             "&mode=direct"+
                             "&dmLineSelectionAll=1"+
-                            "&itdDateYear=" + formattedYear+
-                            "&itdDateMonth=" + formattedmonth+
-                            "&itdDateDay=" + formattedday+
-                            "&itdTimeHour=" + formattedhour+
-                            "&itdTimeMinute=" + formattedminute+
-                            "&useRealtime=1";
-                    aa.clear();
-                    aa.add(url);
-                     URL u = new URL(url);
+                            "&itdDateYear=" + formattedYear.format(current)+
+                            "&itdDateMonth=" + formattedmonth.format(current)+
+                            "&itdDateDay=" + formattedday.format(current)+
+                            "&itdTimeHour=" + formattedhour.format(current)+
+                            "&itdTimeMinute=" + formattedminute.format(current)+
+                            "&useRealtime=1"+
+                            "&outputFormat=JSON";
+                    URL u = new URL(url);
                     lastTask = new RequestDeparturesByStation();
                     ((RequestDeparturesByStation) lastTask).execute(u);
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
-                //aa.clear();
-                aa.add("Departures:");
-                aa.add("TODO");
             }
         });
     }
@@ -156,26 +183,67 @@ public class DepartureFragment extends Fragment {
             try {
                 HttpResponse response = httpclient.execute(g);
 
-                /*Scanner reader = new Scanner(response.getEntity().getContent(), "UTF-8").useDelimiter("\\A");
+                Scanner reader = new Scanner(response.getEntity().getContent(), "UTF-8").useDelimiter("\\A");
                 String content = reader.hasNext() ? reader.next() : null;
                 if (content == null) {
                     return al;
                 }
-                */
 
-                XmlPullParser parser = Xml.newPullParser();
-                parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-                parser.setInput(response.getEntity().getContent(), null);
-                parser.nextTag();
+                JSONObject jObject = new JSONObject(content);
+                JSONArray dl = jObject.getJSONArray("departureList");
 
-                //TODO: parse XML
+                String[][] deps = new String[dl.length()][4];
+                int maxlento = 0;
+                for (int i = 0; i < dl.length(); i++) {
+                    JSONObject departureentry = dl.getJSONObject(i);
 
-                //al.add(content);
+                    JSONObject servline = departureentry.getJSONObject("servingLine");
+                    String to = servline.getString("direction");
+                    String line = servline.getString("symbol");
+                    String delay = "0";
+                    if (servline.has("delay")) {
+                        delay = servline.getString("delay");
+                    }
+
+                    JSONObject dj = departureentry.getJSONObject("dateTime");
+
+                    Calendar planneddeparture = Calendar.getInstance(tz);
+                    planneddeparture.set(
+                            Integer.valueOf(dj.getString("year")),
+                            Integer.valueOf(dj.getString("month")),
+                            Integer.valueOf(dj.getString("day")),
+                            Integer.valueOf(dj.getString("hour")),
+                            Integer.valueOf(dj.getString("minute"))
+                    );
+
+                    Calendar realdeparture = planneddeparture;
+                    if (departureentry.has("realDateTime")) {
+                        JSONObject drj = departureentry.getJSONObject("realDateTime");
+                        realdeparture.set(
+                                Integer.valueOf(drj.getString("year")),
+                                Integer.valueOf(drj.getString("month")),
+                                Integer.valueOf(drj.getString("day")),
+                                Integer.valueOf(drj.getString("hour")),
+                                Integer.valueOf(drj.getString("minute"))
+                        );
+                    }
+                    deps[i] = new String[4];
+                    deps[i][0] = line;
+                    deps[i][1] = to;
+                    maxlento = Math.max(to.length(), maxlento);
+                    deps[i][2] = outputformat.format(planneddeparture.getTime());
+                    deps[i][3] = delay.equals("0") ? "" : "+" + delay + " Minutes";
+                }
+
+                for (String[] d : deps) {
+                    al.add(String.format("%-6s %" + -(maxlento + 4) + "s %s %s", d[0], d[1], d[2], d[3]));
+                }
+
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (XmlPullParserException e) {
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
             return al;
@@ -185,6 +253,7 @@ public class DepartureFragment extends Fragment {
         protected void onPostExecute(List<String> strings) {
             aa.clear();
             aa.addAll(strings);
+            state = states.DEPARTURELIST;
         }
     }
 
@@ -216,7 +285,15 @@ public class DepartureFragment extends Fragment {
                 entrylist.clear();
 
                 if ((Object) sf.get("points") instanceof JSONObject) {
-                    al.add("Obj");
+                    //TODO remove duplicated code
+                    JSONObject o = sf.getJSONObject("points").getJSONObject("point");
+                    if (o.getString("anyType").equals("stop") || o.getString("type").equals("stop")) {
+                        String n = o.getString("name");
+                        Integer q = o.getInt("quality");
+                        Integer id = o.getJSONObject("ref").getInt("id");
+                        Entry e = new Entry(q, n, id);
+                        entrylist.add(e);
+                    }
                 } else if ((Object) sf.get("points") instanceof JSONArray) {
                     JSONArray a = sf.getJSONArray("points");
                     for (int i = 0; i < a.length(); i++) {
@@ -239,7 +316,7 @@ public class DepartureFragment extends Fragment {
                 if (sf.toString().isEmpty()) {
                     al.add("Nothing");
                 } else {
-                    //al.add(sf.toString());
+                    //al.add("Something: " + sf.toString()); // gets filled out by the above
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -253,6 +330,7 @@ public class DepartureFragment extends Fragment {
         protected void onPostExecute(List<String> strings) {
             aa.clear();
             aa.addAll(strings);
+            state = states.STATIONLIST;
         }
     }
 

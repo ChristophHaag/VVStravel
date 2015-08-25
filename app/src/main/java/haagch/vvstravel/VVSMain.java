@@ -23,8 +23,8 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
     //TODO:
     ArrayList<String> t = new ArrayList<>();
     {
-        t.add("From -> To");
         t.add("Departure from");
+        t.add("From -> To");
     }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -135,9 +135,9 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position) {
                 case 0:
-                    return new FromToFragment();
-                case 1:
                     return new DepartureFragment();
+                case 1:
+                    return new FromToFragment();
                 default:
                     return new DepartureFragment();//TODO
             }
