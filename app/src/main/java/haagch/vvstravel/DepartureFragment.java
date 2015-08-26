@@ -1,13 +1,18 @@
 package haagch.vvstravel;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -50,6 +55,7 @@ public class DepartureFragment extends Fragment {
         NONE
     }
     private static states state = states.NONE;
+
     private class MonospaceAdapter extends ArrayAdapter<String> {
         public MonospaceAdapter(Context context, int resource) {
             super(context, resource);
@@ -140,27 +146,27 @@ public class DepartureFragment extends Fragment {
                     SimpleDateFormat formattedminute = new SimpleDateFormat("mm", Locale.GERMANY);
                     formattedminute.setTimeZone(tz);
 
-                    String url = "http://www2.vvs.de/vvs/widget/XML_DM_REQUEST?"+
-                            "zocationServerActive=1"+
-                            "&lsShowTrainsExplicit1"+
-                            "&stateless=1"+
-                            "&language=de"+
-                            "&SpEncId=0"+
-                            "&anySigWhenPerfectNoOtherMatches=1"+
+                    String url = "http://www2.vvs.de/vvs/widget/XML_DM_REQUEST?" +
+                            "zocationServerActive=1" +
+                            "&lsShowTrainsExplicit1" +
+                            "&stateless=1" +
+                            "&language=de" +
+                            "&SpEncId=0" +
+                            "&anySigWhenPerfectNoOtherMatches=1" +
                             "&limit=25" + //TODO
-                            "&depArr=departure"+
-                            "&type_dm=any"+
-                            "&anyObjFilter_dm=2"+
-                            "&deleteAssignedStops=1"+
-                            "&name_dm=" + entrylist.get(position).id+ //TODO thread safety
-                            "&mode=direct"+
-                            "&dmLineSelectionAll=1"+
-                            "&itdDateYear=" + formattedYear.format(current)+
-                            "&itdDateMonth=" + formattedmonth.format(current)+
-                            "&itdDateDay=" + formattedday.format(current)+
-                            "&itdTimeHour=" + formattedhour.format(current)+
-                            "&itdTimeMinute=" + formattedminute.format(current)+
-                            "&useRealtime=1"+
+                            "&depArr=departure" +
+                            "&type_dm=any" +
+                            "&anyObjFilter_dm=2" +
+                            "&deleteAssignedStops=1" +
+                            "&name_dm=" + entrylist.get(position).id + //TODO thread safety
+                            "&mode=direct" +
+                            "&dmLineSelectionAll=1" +
+                            "&itdDateYear=" + formattedYear.format(current) +
+                            "&itdDateMonth=" + formattedmonth.format(current) +
+                            "&itdDateDay=" + formattedday.format(current) +
+                            "&itdTimeHour=" + formattedhour.format(current) +
+                            "&itdTimeMinute=" + formattedminute.format(current) +
+                            "&useRealtime=1" +
                             "&outputFormat=JSON";
                     URL u = new URL(url);
                     lastTask = new RequestDeparturesByStation();
@@ -170,6 +176,30 @@ public class DepartureFragment extends Fragment {
                 }
             }
         });
+        registerForContextMenu(lv);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        menu.add(ContextMenu.NONE, 1, Menu.NONE, R.string.AddToFavorites);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case 1:
+                int id = entrylist.get(info.position).id;
+                String name = entrylist.get(info.position).name;
+                Log.i("aa", "Add " + name + " (" + id + ") to favorites");
+                SharedPreferences preferences = getActivity().getApplicationContext().
+                        getSharedPreferences("favorites", Context.MODE_PRIVATE);
+                SharedPreferences.Editor prefsEditor = preferences.edit();
+                prefsEditor.putInt(name, id);
+                prefsEditor.commit();
+        }
+        return super.onContextItemSelected(item);
     }
 
     private class RequestDeparturesByStation extends AsyncTask<URL, Integer, List<String>> {
@@ -217,6 +247,7 @@ public class DepartureFragment extends Fragment {
 
                     Calendar realdeparture = planneddeparture;
                     if (departureentry.has("realDateTime")) {
+                        realdeparture = Calendar.getInstance(tz);
                         JSONObject drj = departureentry.getJSONObject("realDateTime");
                         realdeparture.set(
                                 Integer.valueOf(drj.getString("year")),

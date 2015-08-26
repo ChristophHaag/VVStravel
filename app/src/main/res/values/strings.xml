@@ -5,4 +5,6 @@
     <string name="depfromDesc">Departure from</string>
     <string name="fromtoDesc">Route</string>
     <string name="favoritedeps">Favorites</string>
+    <string name="AddToFavorites">Add Station to Favorites</string>
+    <string name="DeleteFavorite">Delete Favorite</string>
 </resources>
