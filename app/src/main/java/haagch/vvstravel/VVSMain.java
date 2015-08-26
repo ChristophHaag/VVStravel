@@ -1,30 +1,34 @@
 package haagch.vvstravel;
 
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.os.Bundle;
-import android.support.v4.view.ViewPager;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
 public class VVSMain extends AppCompatActivity implements ActionBar.TabListener {
+    private class FragmentItem {
+        public FragmentItem(int id, Class f) {
+            this.id = id;
+            this.f = f;
+        }
+        int id;
+        Class f;
+    }
     //TODO:
-    ArrayList<String> t = new ArrayList<>();
+    ArrayList<FragmentItem> t = new ArrayList<>();
     {
-        t.add("Departure from");
-        t.add("From -> To");
+        t.add(new FragmentItem(R.string.depfromDesc, DepartureFragment.class));
+        t.add(new FragmentItem(R.string.fromtoDesc, FromToFragment.class));
+        t.add(new FragmentItem(R.string.favoritedeps, DepartureFavoritesFragment.class));
     }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -133,14 +137,14 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            switch (position) {
-                case 0:
-                    return new DepartureFragment();
-                case 1:
-                    return new FromToFragment();
-                default:
-                    return new DepartureFragment();//TODO
+            try {
+                return (Fragment) t.get(position).f.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
+            return new DepartureFragment();
         }
 
         @Override
@@ -152,7 +156,7 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
         @Override
         public CharSequence getPageTitle(int position) {
             Locale l = Locale.getDefault();
-            return t.get(position);
+            return getString(t.get(position).id);
 /*
             switch (position) {
                 case 0:
