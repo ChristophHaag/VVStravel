@@ -82,6 +82,13 @@ public class DepartureFavoritesFragment extends Fragment {
         menu.add(ContextMenu.NONE, 1, Menu.NONE, R.string.DeleteFavorite);
     }
 
+    public void refreshFragment() {
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(this);
+        ft.attach(this);
+        ft.commit();
+    }
+
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if(getUserVisibleHint()) {
@@ -95,10 +102,7 @@ public class DepartureFavoritesFragment extends Fragment {
                     SharedPreferences.Editor prefsEditor = preferences.edit();
                     prefsEditor.remove(name);
                     prefsEditor.commit();
-                    final FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    ft.detach(this);
-                    ft.attach(this);
-                    ft.commit();
+                    refreshFragment();
             }
         }
         return super.onContextItemSelected(item);

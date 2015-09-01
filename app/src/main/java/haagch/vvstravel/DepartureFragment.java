@@ -203,6 +203,7 @@ public class DepartureFragment extends Fragment {
                     SharedPreferences.Editor prefsEditor = preferences.edit();
                     prefsEditor.putInt(name, id);
                     prefsEditor.commit();
+                    ((DepartureFavoritesFragment) ((VVSMain) getActivity()).getFragmentItem(R.string.favoritedeps).f).refreshFragment(); //TODO: iugly
             }
         }
         return super.onContextItemSelected(item);
