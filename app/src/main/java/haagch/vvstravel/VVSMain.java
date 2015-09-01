@@ -15,20 +15,35 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class VVSMain extends AppCompatActivity implements ActionBar.TabListener {
-    private class FragmentItem {
-        public FragmentItem(int id, Class f) {
-            this.id = id;
-            this.f = f;
+
+    public FragmentItem getFragmentItem(int fid) {
+        int i = 0;
+        for (FragmentItem f : fragments) {
+            if (f.id == fid) {
+                return f;
+            }
+            i++;
         }
-        int id;
-        Class f;
+        return fragments.get(0); // doesn't happen
     }
+
+    public int getFragmentTabNum(int fid) {
+        int i = 0;
+        for (FragmentItem f : fragments) {
+            if (f.id == fid) {
+                return i;
+            }
+            i++;
+        }
+        return 0; // doesn't happen
+    }
+
     //TODO:
-    ArrayList<FragmentItem> t = new ArrayList<>();
+    static ArrayList<FragmentItem> fragments = new ArrayList<>();
     {
-        t.add(new FragmentItem(R.string.depfromDesc, DepartureFragment.class));
-        t.add(new FragmentItem(R.string.fromtoDesc, FromToFragment.class));
-        t.add(new FragmentItem(R.string.favoritedeps, DepartureFavoritesFragment.class));
+        fragments.add(new FragmentItem(R.string.favoritedeps, new DepartureFavoritesFragment()));
+        fragments.add(new FragmentItem(R.string.depfromDesc, new DepartureFragment()));
+        fragments.add(new FragmentItem(R.string.fromtoDesc, new FromToFragment()));
     }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -137,26 +152,19 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            try {
-                return (Fragment) t.get(position).f.newInstance();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-            return new DepartureFragment();
+            return fragments.get(position).f;
         }
 
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return t.size();
+            return fragments.size();
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             Locale l = Locale.getDefault();
-            return getString(t.get(position).id);
+            return getString(fragments.get(position).id);
 /*
             switch (position) {
                 case 0:

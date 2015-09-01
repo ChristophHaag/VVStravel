@@ -49,12 +49,13 @@ import static java.util.Collections.sort;
  * Created by chris on 20.08.15.
  */
 public class DepartureFragment extends Fragment {
-    private enum states {
+    public enum states {
         DEPARTURELIST,
         STATIONLIST,
+        SETEXTERNAL,
         NONE
     }
-    private static states state = states.NONE;
+    public static states state = states.NONE;
 
     private class MonospaceAdapter extends ArrayAdapter<String> {
         public MonospaceAdapter(Context context, int resource) {
@@ -102,6 +103,9 @@ public class DepartureFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (state == states.SETEXTERNAL) {
+                    return;
+                }
                 String vvsurl = "http://www2.vvs.de/vvs/XSLT_STOPFINDER_REQUEST?jsonp=func&suggest_macro=vvs&name_sf=";
                 URL u = null;
                 try {
@@ -361,23 +365,6 @@ public class DepartureFragment extends Fragment {
             aa.clear();
             aa.addAll(strings);
             state = states.STATIONLIST;
-        }
-    }
-
-    private class Entry implements Comparable<Entry> {
-        public Entry(int quality, String name, int id) {
-            this.quality = quality;
-            this.name = name;
-            this.id = id;
-        }
-
-        int quality;
-        String name;
-        int id;
-
-        @Override
-        public int compareTo(Entry another) {
-            if (another.quality == this.quality) return 0; else return this.quality > another.quality ? -1 : 1;
         }
     }
 

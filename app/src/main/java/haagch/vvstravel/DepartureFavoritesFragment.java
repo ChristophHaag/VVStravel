@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -58,12 +60,19 @@ public class DepartureFavoritesFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String name = orderednames.get(position);
                 int stationId = all.get(name);
-                final FragmentTransaction ft = getFragmentManager().beginTransaction();
-                //TODO
-                //DepartureFragment dep = (DepartureFragment)
-                //        getFragmentManager().findFragmentById(R.id.);
-                //ft.replace(R.id., new NewFragmentToReplace(), "NewFragmentTag");
-                ft.commit();
+
+                ViewPager mViewPager = (ViewPager) getActivity().findViewById(R.id.pager);
+                int tabid = ((VVSMain)getActivity()).getFragmentTabNum(R.string.depfromDesc); //abuse desc string
+                mViewPager.setCurrentItem(tabid);
+                DepartureFragment f = (DepartureFragment) ((VVSMain)getActivity()).getFragmentItem(R.string.depfromDesc).f; //abuse desc string
+                //insert our station and trigger async request
+                f.state = DepartureFragment.states.SETEXTERNAL;
+                f.entrylist.clear();
+                f.entrylist.add(new Entry(0, "", stationId));
+                ListView lv = (ListView) f.getView().findViewById(R.id.stationlistView);
+                EditText et = (EditText) f.getView().findViewById(R.id.stationtf);
+                et.setText(name);
+                lv.performItemClick(null, 0, 0);
             }
         });
     }
