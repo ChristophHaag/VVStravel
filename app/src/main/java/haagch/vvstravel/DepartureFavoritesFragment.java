@@ -84,20 +84,22 @@ public class DepartureFavoritesFragment extends Fragment {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        switch (item.getItemId()) {
-            case 1:
-                String name = orderednames.get(info.position);
-                Log.i("aa", "Remove " + name + " from favorites");
-                SharedPreferences preferences = getActivity().getApplicationContext().
-                        getSharedPreferences("favorites", Context.MODE_PRIVATE);
-                SharedPreferences.Editor prefsEditor = preferences.edit();
-                prefsEditor.remove(name);
-                prefsEditor.commit();
-                final FragmentTransaction ft = getFragmentManager().beginTransaction();
-                ft.detach(this);
-                ft.attach(this);
-                ft.commit();
+        if(getUserVisibleHint()) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            switch (item.getItemId()) {
+                case 1:
+                    String name = orderednames.get(info.position);
+                    Log.i("aa", "Remove " + name + " from favorites");
+                    SharedPreferences preferences = getActivity().getApplicationContext().
+                            getSharedPreferences("favorites", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor prefsEditor = preferences.edit();
+                    prefsEditor.remove(name);
+                    prefsEditor.commit();
+                    final FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    ft.detach(this);
+                    ft.attach(this);
+                    ft.commit();
+            }
         }
         return super.onContextItemSelected(item);
     }
