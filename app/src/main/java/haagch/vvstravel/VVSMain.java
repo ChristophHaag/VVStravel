@@ -40,7 +40,7 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
 
     //TODO:
     static ArrayList<FragmentItem> fragments = new ArrayList<>();
-    {
+    static {
         fragments.add(new FragmentItem(R.string.favoritedeps, new DepartureFavoritesFragment()));
         fragments.add(new FragmentItem(R.string.depfromDesc, new DepartureFragment()));
         fragments.add(new FragmentItem(R.string.fromtoDesc, new FromToFragment()));
