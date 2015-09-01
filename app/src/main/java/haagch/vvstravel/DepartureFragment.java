@@ -31,8 +31,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -109,8 +112,10 @@ public class DepartureFragment extends Fragment {
                 String vvsurl = "http://www2.vvs.de/vvs/XSLT_STOPFINDER_REQUEST?jsonp=func&suggest_macro=vvs&name_sf=";
                 URL u = null;
                 try {
-                    u = new URL(vvsurl + s.toString());
+                    u = new URL(vvsurl + URLEncoder.encode(s.toString(), "UTF-8"));
                 } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
                 if (lastTask != null && lastTask.getStatus() != AsyncTask.Status.FINISHED) {
@@ -306,7 +311,12 @@ public class DepartureFragment extends Fragment {
             }
             URL u = params[0];
             HttpClient httpclient = new DefaultHttpClient();
-            HttpGet g = new HttpGet(String.valueOf(u));
+            HttpGet g = null;
+            try {
+                g = new HttpGet(u.toURI());
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
             try {
                 HttpResponse response = httpclient.execute(g);
 
