@@ -109,7 +109,7 @@ public class DepartureFragment extends Fragment {
                 if (state == states.SETEXTERNAL) {
                     return;
                 }
-                String vvsurl = "http://www2.vvs.de/vvs/XSLT_STOPFINDER_REQUEST?jsonp=func&suggest_macro=vvs&name_sf=";
+                String vvsurl = "http://www2.vvs.de/vvs/XSLT_STOPFINDER_REQUEST?jsonp=&suggest_macro=vvs&name_sf=";
                 URL u = null;
                 try {
                     u = new URL(vvsurl + URLEncoder.encode(s.toString(), "UTF-8"));
@@ -325,8 +325,7 @@ public class DepartureFragment extends Fragment {
                 if (content == null) {
                     return al;
                 }
-                String trunc = content.substring(5, content.length() - 2);
-                JSONObject jObject = new JSONObject(trunc);
+                JSONObject jObject = new JSONObject(content);
                 JSONObject sf = jObject.getJSONObject("stopFinder");
 
                 entrylist.clear();
