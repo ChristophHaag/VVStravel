@@ -95,12 +95,10 @@ public class DepartureFragment extends Fragment {
         et.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -132,10 +130,12 @@ public class DepartureFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (state == states.DEPARTURELIST) {
+                    /* TODO: What to do?
                     aa.clear();
                     final EditText et = (EditText) getView().findViewById(R.id.stationtf);
                     et.setText("");
                     state = states.NONE;
+                    */
                     return;
                 }
                 if (position >= entrylist.size()) {
@@ -190,7 +190,9 @@ public class DepartureFragment extends Fragment {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        menu.add(ContextMenu.NONE, 1, Menu.NONE, R.string.AddToFavorites);
+        if (state == states.STATIONLIST) {
+            menu.add(ContextMenu.NONE, 1, Menu.NONE, R.string.AddToFavorites);
+        }
     }
 
     @Override
