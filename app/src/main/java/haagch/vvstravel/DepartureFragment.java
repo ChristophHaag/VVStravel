@@ -268,7 +268,7 @@ public class DepartureFragment extends Fragment {
                     deps[i][1] = to;
                     maxlento = Math.max(to.length(), maxlento);
                     deps[i][2] = outputformat.format(planneddeparture.getTime());
-                    deps[i][3] = delay.equals("0") ? "" : "+" + delay + " Minutes";
+                    deps[i][3] = delay.equals("0") ? "" : "+" + delay + " (" + outputformat.format(realdeparture.getTime()) + ")";
                 }
 
                 for (String[] d : deps) {
@@ -324,7 +324,7 @@ public class DepartureFragment extends Fragment {
 
                 entrylist.clear();
 
-                if ((Object) sf.get("points") instanceof JSONObject) {
+                if (sf.get("points") instanceof JSONObject) {
                     //TODO remove duplicated code
                     JSONObject o = sf.getJSONObject("points").getJSONObject("point");
                     if (o.getString("anyType").equals("stop") || o.getString("type").equals("stop")) {
@@ -334,7 +334,7 @@ public class DepartureFragment extends Fragment {
                         Entry e = new Entry(q, n, id);
                         entrylist.add(e);
                     }
-                } else if ((Object) sf.get("points") instanceof JSONArray) {
+                } else if (sf.get("points") instanceof JSONArray) {
                     JSONArray a = sf.getJSONArray("points");
                     for (int i = 0; i < a.length(); i++) {
                         JSONObject o = a.getJSONObject(i);
@@ -352,11 +352,6 @@ public class DepartureFragment extends Fragment {
                 sort(entrylist);
                 for (Entry e : entrylist) {
                     al.add(e.name + " (" + e.quality + ") " + e.id);
-                }
-                if (sf.toString().isEmpty()) {
-                    al.add("Nothing");
-                } else {
-                    //al.add("Something: " + sf.toString()); // gets filled out by the above
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -378,8 +373,6 @@ public class DepartureFragment extends Fragment {
         state = DepartureFragment.states.SETEXTERNAL;
         entrylist.clear();
         entrylist.add(new Entry(0, "", stationId));
-
-        //TODO: move to other fragment
         ListView departurelistlv = (ListView) getView().findViewById(R.id.stationlistView);
         EditText et = (EditText) getView().findViewById(R.id.stationtf);
         et.setText(name);
