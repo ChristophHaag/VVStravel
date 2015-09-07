@@ -1,7 +1,6 @@
 package haagch.vvstravel;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -203,12 +202,7 @@ public class DepartureFragment extends Fragment {
                     int id = entrylist.get(info.position).id;
                     String name = entrylist.get(info.position).name;
                     Log.i("aa", "Add " + name + " (" + id + ") to favorites");
-                    SharedPreferences preferences = getActivity().getApplicationContext().
-                            getSharedPreferences("favorites", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor prefsEditor = preferences.edit();
-                    prefsEditor.putInt(name, id);
-                    prefsEditor.commit();
-                    ((DepartureFavoritesFragment) ((VVSMain) getActivity()).getFragmentItem(R.string.favoritedeps).f).refreshFragment(); //TODO: ugly
+                    ((DepartureFavoritesFragment) ((VVSMain) getActivity()).getFragmentItem(R.string.favoritedeps).f).addEntry(name, id);
             }
         }
         return super.onContextItemSelected(item);
@@ -380,4 +374,15 @@ public class DepartureFragment extends Fragment {
         }
     }
 
+    public void triggerRequest(String name, int stationId) {
+        state = DepartureFragment.states.SETEXTERNAL;
+        entrylist.clear();
+        entrylist.add(new Entry(0, "", stationId));
+
+        //TODO: move to other fragment
+        ListView departurelistlv = (ListView) getView().findViewById(R.id.stationlistView);
+        EditText et = (EditText) getView().findViewById(R.id.stationtf);
+        et.setText(name);
+        departurelistlv.performItemClick(null, 0, 0);
+    }
 }
