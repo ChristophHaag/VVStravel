@@ -39,7 +39,7 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
     static {
         fragments.add(new FragmentItem(R.string.favoritedeps, new DepartureFavoritesFragment()));
         fragments.add(new FragmentItem(R.string.depfromDesc, new DepartureFragment()));
-        fragments.add(new FragmentItem(R.string.fromtoDesc, new FromToFragment()));
+        /*fragments.add(new FragmentItem(R.string.fromtoDesc, new FromToFragment()));*/ //TODO: implement
     }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -87,7 +87,7 @@ public class VVSMain extends AppCompatActivity implements ActionBar.TabListener 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_vvsmain, menu);
+        /*getMenuInflater().inflate(R.menu.menu_vvsmain, menu);*/ //no settings yet
         return true;
     }
 
